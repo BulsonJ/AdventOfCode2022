@@ -43,6 +43,7 @@ fn day1_part_two(input: &str) -> i32 {
     elves.iter().rev().take(3).sum()
 }
 
+#[derive(Clone, Copy, PartialEq)]
 enum RockPaperScissors {
     Rock,
     Paper,
@@ -84,52 +85,57 @@ impl RockPaperScissors {
         }
     }
 
-    fn beats(&self, other_play: &Self) -> RockPaperScissorsResult {
-        match self {
-            RockPaperScissors::Rock => match other_play {
-                RockPaperScissors::Rock => RockPaperScissorsResult::Draw,
-                RockPaperScissors::Paper => RockPaperScissorsResult::Loss,
-                RockPaperScissors::Scissors => RockPaperScissorsResult::Win,
-            },
-            RockPaperScissors::Paper => match other_play {
-                RockPaperScissors::Rock => RockPaperScissorsResult::Win,
-                RockPaperScissors::Paper => RockPaperScissorsResult::Draw,
-                RockPaperScissors::Scissors => RockPaperScissorsResult::Loss,
-            },
-            RockPaperScissors::Scissors => match other_play {
-                RockPaperScissors::Rock => RockPaperScissorsResult::Loss,
-                RockPaperScissors::Paper => RockPaperScissorsResult::Win,
-                RockPaperScissors::Scissors => RockPaperScissorsResult::Draw,
-            },
-        }
+    fn beats(&self, other_play: &Self) -> bool {
+        matches!(
+            (self, other_play),
+            (Self::Rock, Self::Scissors)
+                | (Self::Paper, Self::Rock)
+                | (Self::Scissors, Self::Paper)
+        )
     }
 
     fn get_move_needed_for_result(
         &self,
         result_required: &RockPaperScissorsResult,
     ) -> RockPaperScissors {
+        const ALL_MOVES: [RockPaperScissors; 3] = [
+            RockPaperScissors::Rock,
+            RockPaperScissors::Paper,
+            RockPaperScissors::Scissors,
+        ];
+
         match result_required {
-            RockPaperScissorsResult::Win => match self {
-                RockPaperScissors::Rock => RockPaperScissors::Paper,
-                RockPaperScissors::Paper => RockPaperScissors::Scissors,
-                RockPaperScissors::Scissors => RockPaperScissors::Rock,
-            },
-            RockPaperScissorsResult::Draw => match self {
-                RockPaperScissors::Rock => RockPaperScissors::Rock,
-                RockPaperScissors::Paper => RockPaperScissors::Paper,
-                RockPaperScissors::Scissors => RockPaperScissors::Scissors,
-            },
-            RockPaperScissorsResult::Loss => match self {
-                RockPaperScissors::Rock => RockPaperScissors::Scissors,
-                RockPaperScissors::Paper => RockPaperScissors::Rock,
-                RockPaperScissors::Scissors => RockPaperScissors::Paper,
-            },
+            RockPaperScissorsResult::Loss => ALL_MOVES
+                .iter()
+                .copied()
+                .find(|&m| self.beats(&m))
+                .expect("at least one move should win"),
+            RockPaperScissorsResult::Draw => ALL_MOVES
+                .iter()
+                .copied()
+                .find(|&m| *self == m)
+                .expect("at least one move draws"),
+            RockPaperScissorsResult::Win => ALL_MOVES
+                .iter()
+                .copied()
+                .find(|&m| m.beats(self))
+                .expect("at least one move loses"),
+        }
+    }
+
+    fn get_outcome(&self, other_play: &Self) -> RockPaperScissorsResult {
+        if self.beats(other_play) {
+            RockPaperScissorsResult::Win
+        } else if other_play.beats(self) {
+            RockPaperScissorsResult::Loss
+        } else {
+            RockPaperScissorsResult::Draw
         }
     }
 
     fn get_result(&self, other_play: &Self) -> i32 {
         self.get_move_score()
-            + match self.beats(other_play) {
+            + match self.get_outcome(other_play) {
                 RockPaperScissorsResult::Win => 6,
                 RockPaperScissorsResult::Draw => 3,
                 RockPaperScissorsResult::Loss => 0,
