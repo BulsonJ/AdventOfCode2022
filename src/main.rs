@@ -1,5 +1,5 @@
-use advent_of_code_2022::day_three;
+use advent_of_code_2022::day_four;
 
 fn main() {
-    day_three::run();
+    day_four::run();
 }
