@@ -1,3 +1,10 @@
+pub fn run() {
+    let input = include_str!("../input/day3.txt");
+
+    println!("PART 1: {}", day1_part_one(input));
+    println!("PART 2: {}", day1_part_two(input));
+}
+
 fn day1_part_one(input: &str) -> i32 {
     let mut current_elf = 0;
     let mut elves = Vec::new();
